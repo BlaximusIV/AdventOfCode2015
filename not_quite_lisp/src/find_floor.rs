@@ -1,4 +1,4 @@
-pub fn find_target_floor(input_text: String){
+pub fn find_target_floor(input_text: &String){
     let mut target_floor: i32 = 0;
 
     for line in input_text.lines() {
