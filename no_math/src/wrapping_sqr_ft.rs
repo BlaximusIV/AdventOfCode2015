@@ -1,22 +1,16 @@
-pub fn calculate_total_sqr_ft(input: String) -> usize {
+pub fn calculate_total_sqr_ft(packages: &Vec<Vec<usize>>) -> usize {
     let mut total: usize = 0;
 
-    for line in input.lines(){
-        let (length, width, height) = parse_package(line);
-        total += calculate_package_paper(length, width, height);
+    for package in packages {
+        total += calculate_package_paper(package);
     }
 
     total
 }
 
-fn parse_package(line: &str) -> (usize, usize, usize) {
-    let dimensions = line.split("x").collect::<Vec<&str>>();
-    let dimensions: Vec<usize> = dimensions.iter().map(|x| x.parse::<usize>().unwrap()).collect();
+fn calculate_package_paper(package: &Vec<usize>) -> usize {
+    let (length, width, height) = (package[0], package[1], package[2]);
 
-    (dimensions[0], dimensions[1], dimensions[2])
-}
-
-fn calculate_package_paper(length: usize, width: usize, height: usize) -> usize {
     let length_width = length * width;
     let width_height = width * height;
     let height_length = height * length;
@@ -42,12 +36,6 @@ fn get_smallest_side(sides: [usize; 3]) -> usize {
 }
 
 #[test]
-fn parses_package(){
-    assert_eq!(parse_package("1x2x3"), (1,2,3));
-    assert_eq!(parse_package("23x2x4"), (23, 2, 4));
-}
-
-#[test]
 fn gets_smallest_side(){
     assert_eq!(get_smallest_side([12,34,2]), 2);
     assert_eq!(get_smallest_side([2,1,3]), 1);
@@ -56,6 +44,6 @@ fn gets_smallest_side(){
 
 #[test]
 fn calculates_correctly(){
-    assert_eq!(calculate_package_paper(2, 3, 4), 58);
-    assert_eq!(calculate_package_paper(1, 1, 10), 43);
+    assert_eq!(calculate_package_paper(&vec![2, 3, 4]), 58);
+    assert_eq!(calculate_package_paper(&vec![1, 1, 10]), 43);
 }
