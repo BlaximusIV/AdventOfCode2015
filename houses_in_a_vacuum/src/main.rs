@@ -8,7 +8,7 @@ fn main() {
 
     let unique_house_count = route_plotter::find_house_count(input.lines().nth(0).unwrap());
 
-    
+    println!("{} unique homes visited.", unique_house_count);
 }
 
 fn import_input(file_name: &str) -> Result<String, Box<dyn Error>> {
