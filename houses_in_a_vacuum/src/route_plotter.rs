@@ -2,14 +2,25 @@ use std::collections::HashMap;
 
 pub fn find_house_count(directions: &str) -> usize {
     let mut visited_coordinates: HashMap<[i32; 2], usize> = HashMap::new();
-    let mut current_coordinate: [i32; 2] = [0,0];
+    let mut current_santa_coordinate: [i32; 2] = [0,0];
+    let mut currernt_robo_coordinate: [i32; 2] = [0,0];
 
-    visited_coordinates.insert(current_coordinate, 1);
+    visited_coordinates.insert(current_santa_coordinate, 1);
     
+    let mut santa_turn: bool = true;
     for c in directions.chars() {
-        let next_coordinate = find_next_coordinate(current_coordinate, c);
-        current_coordinate = next_coordinate;
-        insert_visited_coordinate(&current_coordinate, &mut visited_coordinates);
+        let mut next_coordinate: [i32; 2];
+
+        if santa_turn {
+            next_coordinate = find_next_coordinate(current_santa_coordinate, c);
+            current_santa_coordinate = next_coordinate;
+        } else {
+            next_coordinate = find_next_coordinate(currernt_robo_coordinate, c);
+            currernt_robo_coordinate = next_coordinate;
+        }
+
+        insert_visited_coordinate(&next_coordinate, &mut visited_coordinates);
+        santa_turn = !santa_turn;
     }
 
     visited_coordinates.keys().count()
