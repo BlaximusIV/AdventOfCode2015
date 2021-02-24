@@ -1,12 +1,18 @@
 use std::collections::HashMap;
 
 pub fn find_house_count(directions: &str) -> usize {
-    let mut visited_coordinates: Vec<(i32, Vec<i32>)> = vec![(0,vec![0])];
+    let mut visited_coordinates: HashMap<[i32; 2], usize> = HashMap::new();
     let mut current_coordinate: [i32; 2] = [0,0];
 
+    visited_coordinates.insert(current_coordinate, 1);
     
+    for c in directions.chars() {
+        let next_coordinate = find_next_coordinate(current_coordinate, c);
+        current_coordinate = next_coordinate;
+        insert_visited_coordinate(&current_coordinate, &mut visited_coordinates);
+    }
 
-    1
+    visited_coordinates.keys().count()
 }
 
 fn find_next_coordinate(current: [i32; 2], direction: char) -> [i32; 2] {
@@ -23,8 +29,14 @@ fn find_next_coordinate(current: [i32; 2], direction: char) -> [i32; 2] {
     next_coordinate
 } 
 
-fn insert_visited_coordinate(coordinate: &[i32; 2], coordinate_map: &mut Vec<(i32, Vec<i32>)>){
+fn insert_visited_coordinate(coordinate: &[i32; 2], coordinate_map: &mut HashMap<[i32;2], usize>){
     
+    if !coordinate_map.contains_key(coordinate) {
+        coordinate_map.insert(*coordinate, 1);
+    } else {
+        *coordinate_map.entry(*coordinate).or_insert(1) += 1;
+    }
+
 }
 
 #[test]
@@ -38,11 +50,4 @@ fn finds_next_coordinate(){
 #[test]
 fn array_equality(){
     assert_eq!([0,1], [0,1]);
-}
-
-#[test]
-fn hashmap_keys(){
-    let mut hash: HashMap<[i32; 2], Vec<i32>> = HashMap::new();
-
-    
 }
