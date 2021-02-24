@@ -9,7 +9,7 @@ pub fn find_house_count(directions: &str) -> usize {
     
     let mut santa_turn: bool = true;
     for c in directions.chars() {
-        let mut next_coordinate: [i32; 2];
+        let next_coordinate: [i32; 2];
 
         if santa_turn {
             next_coordinate = find_next_coordinate(current_santa_coordinate, c);
