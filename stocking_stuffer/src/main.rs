@@ -6,7 +6,7 @@ fn main() {
     const KEY: &str = "ckczppom";
     let mut target_number = 0;
 
-    let re: Regex = Regex::new(r"^0{5}[0-9a-f]*").unwrap();
+    let re: Regex = Regex::new(r"^0{6}[0-9a-f]*").unwrap();
     let mut hash_found = false;
 
     while !hash_found {
