@@ -1,4 +1,4 @@
-use std:: { error::Error, fs };
+use std:: { error::Error, fs, time::Instant };
 use regex::Regex;
 
 const GRID_SIZE:usize = 1000;
@@ -22,17 +22,29 @@ struct Instruction {
 }
 
 fn main() {
+    let now = Instant::now();
+
     let instructions = import_input("Input.txt").unwrap();
     
-    let mut grid = create_grid();
-    
-    for instruction in instructions {
-        execute(&mut grid, instruction)
+    // Part 1
+    let mut grid = create_bool_grid();
+    for instruction in &instructions {
+        execute_bool(&mut grid, &instruction)
     }
 
     let count = count_lights(grid);
-
     println!("On lights: {}", count);
+
+    // Part 2
+    let mut grid = create_int_grid();
+    for instruction in instructions {
+        execute_int(&mut grid, &instruction)
+    }
+
+    let level = count_light_levels(&grid);
+    println!("Combined light levels: {}", level);
+
+    println!("Elapsed time: {}ms", now.elapsed().as_millis());
 }
 
 fn import_input(file_name: &'static str) -> Result<Vec<Instruction>, Box<dyn Error>> {
@@ -58,19 +70,26 @@ fn import_input(file_name: &'static str) -> Result<Vec<Instruction>, Box<dyn Err
     Ok(instructions)
 }
 
-fn create_grid() -> [[bool;GRID_SIZE]; GRID_SIZE] {
-    let row:[bool;GRID_SIZE] = [false; GRID_SIZE];
-    let grid:[[bool;GRID_SIZE]; GRID_SIZE] = [row; GRID_SIZE];
-
-    grid
-}
-
 fn parse_coord(text: &str) -> Coordinate {
     let yx_str = text.split(",").collect::<Vec<&str>>();
     Coordinate { x: yx_str[0].parse::<usize>().unwrap(), y: yx_str[1].parse::<usize>().unwrap() }
 }
 
-fn execute(grid: &mut [[bool;GRID_SIZE]; GRID_SIZE], instruction: Instruction) {
+fn create_bool_grid() -> [[bool;GRID_SIZE]; GRID_SIZE] {
+    let row:[bool;GRID_SIZE] = [false; GRID_SIZE];
+    let grid = [row; GRID_SIZE];
+
+    grid
+}
+
+fn create_int_grid() -> Vec<Vec<usize>> {
+    let row = vec![0;GRID_SIZE];
+    let grid = vec![row; GRID_SIZE];
+
+    grid
+}
+
+fn execute_bool(grid: &mut [[bool;GRID_SIZE]; GRID_SIZE], instruction: &Instruction) {
     for i in instruction.start.y..instruction.end.y + 1{
         for j in instruction.start.x..instruction.end.x + 1 {
             grid[i][j] = 
@@ -95,9 +114,35 @@ fn count_lights(grid: [[bool;GRID_SIZE]; GRID_SIZE]) -> usize {
     on_count
 }
 
+fn execute_int(grid: &mut Vec<Vec<usize>>, instruction: &Instruction) {
+    for i in instruction.start.y..instruction.end.y + 1{
+        for j in instruction.start.x..instruction.end.x + 1 {
+                if instruction.i_type == InstructionType::On { grid[i][j] += 1 }
+                else if instruction.i_type == InstructionType::Off { 
+                    if grid[i][j] > 0 {
+                        grid[i][j] -= 1
+                    }
+                 }
+                else { grid[i][j] += 2 }
+        }
+    }
+}
+
+fn count_light_levels(grid: &Vec<Vec<usize>>) -> usize {
+    let mut level_count: usize = 0;
+
+    for i in 0..GRID_SIZE{
+        for j in 0..GRID_SIZE {
+            level_count += grid[i][j];
+        }
+    }
+
+    level_count
+}
+
 #[test]
-fn correct_counts() {
-    let mut grid = create_grid();
+fn correct_on_counts() {
+    let mut grid = create_bool_grid();
 
     grid[234][12] = true;
     grid[224][12] = true;
@@ -112,7 +157,7 @@ fn correct_counts() {
 
 #[test]
 fn correct_on() {
-    let mut grid = create_grid();
+    let mut grid = create_bool_grid();
 
     let instruction = Instruction {
         i_type: InstructionType::On,
@@ -120,8 +165,47 @@ fn correct_on() {
         end: Coordinate { x: 999, y: 999 }
     };
 
-    execute(&mut grid, instruction);
+    execute_bool(&mut grid, &instruction);
 
     let count = count_lights(grid);
     assert_eq!(count, 1_000_000);
+}
+
+#[test]
+fn correct_level_counts() {
+    let mut grid = create_int_grid();
+
+    grid[234][12] = 45;
+    grid[224][12] = 3;
+    grid[214][12] = 4;
+    grid[204][12] = 4;
+    grid[274][12] = 49;
+    grid[999][999] = 12;
+
+    assert_eq!(count_light_levels(&grid), 117);
+}
+
+#[test]
+fn correct_levels() {
+    let mut grid = create_int_grid();
+    
+    let mut instruction = Instruction {
+        i_type: InstructionType::Toggle,
+        start: Coordinate { x: 0, y: 0 },
+        end: Coordinate { x: 999, y: 999 }
+    };
+
+    execute_int(&mut grid, &instruction);
+
+    assert_eq!(count_light_levels(&grid), 2_000_000);
+
+    instruction.i_type = InstructionType::Off;
+    execute_int(&mut grid, &instruction);
+
+    assert_eq!(count_light_levels(&grid), 1_000_000);
+
+    instruction.i_type = InstructionType::On;
+    execute_int(&mut grid, &instruction);
+
+    assert_eq!(count_light_levels(&grid), 2_000_000);
 }
